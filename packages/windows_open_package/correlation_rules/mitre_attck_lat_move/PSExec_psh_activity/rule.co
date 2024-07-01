@@ -8,7 +8,7 @@ event Service_Create_via_Registry_Activity:
             (event_src.title == "sysmon" and msgid == "13")
         ) and ((match(lower(object.fullpath), "*system\\currentcontrolset\\services\\*") 
                 and lower(object.name) == "imagepath"
-                and regex(object.new_value, "\%\%comspec\%\.*powershell.*hidden.*\[scriptblock\]::create.*(new-object\s+io\.compression\.gzipstream)?.*(\[convert\]::frombase64string)?", 0) != null
+                and regex(object.new_value, "%%comspec%%.*powershell.*hidden.*(encoded)?(\[scriptblock\]::create)?.*(new-object\s+io\.compression\.gzipstream)?.*(\[convert\]::frombase64string)?", 0) != null
             )
         )
     }
@@ -23,7 +23,7 @@ event Start_Service_via_CmdLine:
         ) and 
         lower(object.process.parent.name) == "services.exe" and
         lower(object.process.name) == "cmd.exe" and
-        regex(object.process.cmdline, "powershell.*hidden.*\[scriptblock\]::create.*(new-object\s+io\.compression\.gzipstream)?.*(\[convert\]::frombase64string)?", 0) != null
+        regex(object.process.cmdline, "powershell.*hidden.*(encoded)?(\[scriptblock\]::create)?.*(new-object\s+io\.compression\.gzipstream)?.*(\[convert\]::frombase64string)?", 0) != null
     }
 
 rule PSExec_psh_activity: (Service_Create_via_Registry_Activity or Start_Service_via_CmdLine) timer 60s
